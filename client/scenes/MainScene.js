@@ -53,7 +53,7 @@ export default class MainScene extends Phaser.Scene {
 
     const updatesHandler = updates => {
       updates.forEach(gameObject => {
-        const { playerId, dead, doingAction, isAttacking, hiddenFromOthers } = gameObject
+        const { playerId, hiddenFromOthers } = gameObject
         let { x, y } = gameObject;
         x = parseInt(x, 36);
         y = parseInt(y, 36);
@@ -61,8 +61,12 @@ export default class MainScene extends Phaser.Scene {
         if (Object.keys(this.objects).includes(playerId.toString())) {
           // if the gameObject does already exist,
           // update the gameObject
-          let playerObj = this.objects[playerId].playerObj
-          playerObj.setPosition(x, y)
+          let playerObj = this.objects[playerId].playerObj;
+          let visionCircle = this.objects[playerId].visionCircle;
+          let attackCircle = this.objects[playerId].attackCircle;
+          playerObj.setPosition(x, y);
+          visionCircle.setPosition(x, y);
+          attackCircle.setPosition(x, y);
 
           if (hiddenFromOthers) {
             if (playerId == this.playerId) {
@@ -86,8 +90,10 @@ export default class MainScene extends Phaser.Scene {
           // create a new gameObject
           let newGameObject = {
             playerObj: this.createPlayer(playerId, x, y),
-            playerId: playerId
-          }
+            playerId: playerId,
+            visionCircle: new Phaser.GameObjects.Ellipse(this, x, y, 256, 256, 0xff0000, 1).setDepth(1),
+            attackCircle: new Phaser.GameObjects.Ellipse(this, x, y, 128, 128, 0x000000, 0.75).setDepth(1),
+          };
 
           if (playerId == this.playerId) {
             newGameObject.playerObj.setAlpha(0.5);

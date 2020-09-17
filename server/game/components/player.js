@@ -6,6 +6,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   doingAction = false;
   isAttacking = false;
   hiddenFromOthers = true;
+  score = 0;
 
   constructor(scene, playerId, x = 200, y = 200) {
     super(scene, x, y, '');
@@ -23,6 +24,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.prevDoingAction = false;
     this.prevIsAttacking = false;
     this.prevHiddenFromOthers = true;
+    this.prevScore = 0;
 
     this.playerId = playerId
     this.move = {}
@@ -50,6 +52,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
       doingAction: this.doingAction,
       isAttacking: this.isAttacking,
       hiddenFromOthers: this.hiddenFromOthers,
+      score: this.score,
     };
   }
 
@@ -60,8 +63,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     let doingAction = this.doingAction != this.prevDoingAction;
     let isAttacking = this.isAttacking != this.prevIsAttacking;
     let hiddenFromOthers = this.hiddenFromOthers != this.prevHiddenFromOthers;
+    let score = this.score != this.prevScore;
 
-    if (x || y || dead || doingAction || isAttacking || hiddenFromOthers) {
+    if (x || y || dead || doingAction || isAttacking || hiddenFromOthers || score) {
       return true;
     }
 
@@ -139,14 +143,21 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.triggerAttack = false;
     }
+
+    if (this.doingAction) {
+      this.hiddenFromOthers = false;
+    } else {
+      this.hiddenFromOthers = true;
+    }
   }
 
   postUpdate() {
-    this.prevX = this.x
-    this.prevY = this.y
-    this.prevDead = this.dead
-    this.prevDoingAction = this.doingAction
-    this.prevIsAttacking = this.isAttacking
+    this.prevX = this.x;
+    this.prevY = this.y;
+    this.prevDead = this.dead;
+    this.prevDoingAction = this.doingAction;
+    this.prevIsAttacking = this.isAttacking;
+    this.prevScore = this.score;
   }
 }
 

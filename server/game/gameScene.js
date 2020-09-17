@@ -39,6 +39,17 @@ class GameScene extends Phaser.Scene {
     return JSON.stringify(state);
   }
 
+  checkForObjectiveComplete (player, objectiveArea, playersGroup) {
+    if (objectiveArea.checkIfPlayerExists(playersGroup)) {
+      objectiveArea.destroy();
+
+      player.doingAction = false;
+      player.score += 1;
+    } else {
+      objectiveArea.checkCalled = false;
+    }
+  }
+
   inObjectiveArea (player, objectiveArea) {
     player.inObjectiveArea = true;
 
@@ -46,7 +57,7 @@ class GameScene extends Phaser.Scene {
     // If not, set the active player of objective as the current player
     if (objectiveArea.beingUsed) {
       // If the active player doesn't exist anymore or if player is knocked out
-      if(objectiveArea.activePlayer != undefined && !this.playersGroup.children.contains(objectiveArea.activePlayer)) {
+      if(!objectiveArea.checkIfPlayerExists(this.playersGroup)) {
         objectiveArea.activePlayer = undefined;
         objectiveArea.beingUsed = false;
       }
@@ -54,7 +65,10 @@ class GameScene extends Phaser.Scene {
       // If current player that's overlapping is the active player on objective
       // If not, set that player as doing nothing
       if (objectiveArea.activePlayer == player) {
-        // TODO: Timer to complete objective
+        if (!objectiveArea.checkCalled) {
+          this.time.delayedCall(5000, this.checkForObjectiveComplete, [player, objectiveArea, this.playersGroup]);
+          objectiveArea.checkCalled = true;
+        }
       } else {
         player.doingAction = false;
       }
@@ -62,7 +76,6 @@ class GameScene extends Phaser.Scene {
       // If player is in zone and attempting to do objective
       if (player.inObjectiveArea && player.triggerAction) {
         player.doingAction = true;
-        player.hiddenFromOthers = false;
         objectiveArea.activePlayer = player;
         objectiveArea.beingUsed = true;
       }
@@ -101,12 +114,13 @@ class GameScene extends Phaser.Scene {
             player.destroy()
           }
         })
-        channel.emit('removePlayer', channel.playerId)
+
+        this.io.room().emit('removePlayer', channel.playerId)
       })
 
       channel.on('getId', () => {
         channel.playerId = this.getId()
-        channel.emit('getId', channel.playerId.toString(36))
+        this.io.room().emit('getId', channel.playerId.toString(36))
       })
 
       channel.on('playerMove', (data) => {
@@ -129,7 +143,7 @@ class GameScene extends Phaser.Scene {
         this.playersGroup.add(player)
       })
 
-      channel.emit('ready')
+      this.io.room().emit('ready')
     })
   }
 
