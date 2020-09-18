@@ -1,8 +1,10 @@
-import axios from 'axios'
-import { CONSTANTS } from '../CONSTANTS'
+import axios from 'axios';
+import { CONSTANTS } from '../CONSTANTS';
 
-import Player from '../components/Player'
-import Controls from '../components/Controls'
+import Player from '../components/Player';
+import Controls from '../components/Controls';
+import AttackCircle from '../components/AttackCircle';
+import VisionCircle from '../components/VisionCircle';
 
 import DebugScene from './DebugScene';
 
@@ -36,7 +38,7 @@ export default class MainScene extends Phaser.Scene {
     this.map = this.make.tilemap({ key: CONSTANTS.MAPS.ARENA.MAP });
     let tiles = this.map.addTilesetImage('Arena_Tileset', CONSTANTS.MAPS.ARENA.TILES);
 
-    this.map.createDynamicLayer('ground_tiles', tiles, 0, 0).setDepth(-1).setScale(CONSTANTS.SCALE_FACTOR);
+    this.ground_layer = this.map.createDynamicLayer('ground_tiles', tiles, 0, 0).setDepth(-1).setScale(CONSTANTS.SCALE_FACTOR);
     this.map.createDynamicLayer('collision_tiles', tiles, 0, 0).setScale(CONSTANTS.SCALE_FACTOR);
     this.map.createDynamicLayer('overlay_tiles', tiles, 0, 0).setDepth(1).setScale(CONSTANTS.SCALE_FACTOR);
   }
@@ -65,8 +67,6 @@ export default class MainScene extends Phaser.Scene {
           let visionCircle = this.objects[playerId].visionCircle;
           let attackCircle = this.objects[playerId].attackCircle;
           playerObj.setPosition(x, y);
-          visionCircle.setPosition(x, y);
-          attackCircle.setPosition(x, y);
 
           if (hiddenFromOthers) {
             if (playerId == this.playerId) {
@@ -84,6 +84,12 @@ export default class MainScene extends Phaser.Scene {
 
           if (playerId == this.playerId) {
             this.updateCamera();
+
+            visionCircle.clear();
+            visionCircle.fillCircle(x-1, y+5, CONSTANTS.PLAYER.VISION_RANGE);
+
+            attackCircle.clear();
+            attackCircle.fillCircle(x-1, y+5, CONSTANTS.PLAYER.ATTACK_RANGE);
           }
         } else {
           // if the gameObject does NOT exist,
@@ -91,8 +97,8 @@ export default class MainScene extends Phaser.Scene {
           let newGameObject = {
             playerObj: this.createPlayer(playerId, x, y),
             playerId: playerId,
-            visionCircle: new Phaser.GameObjects.Ellipse(this, x, y, 256, 256, 0xff0000, 1).setDepth(1),
-            attackCircle: new Phaser.GameObjects.Ellipse(this, x, y, 128, 128, 0x000000, 0.75).setDepth(1),
+            visionCircle: new VisionCircle(this).fillCircle(x-1, y+5, CONSTANTS.PLAYER.VISION_RANGE),
+            attackCircle: new AttackCircle(this).fillCircle(x-1, y+5, CONSTANTS.PLAYER.ATTACK_RANGE),
           };
 
           if (playerId == this.playerId) {

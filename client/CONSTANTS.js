@@ -23,4 +23,8 @@ export const CONSTANTS = {
             MAP: 'arena_map.json',
         },
     },
+    PLAYER: {
+        ATTACK_RANGE: 42,
+        VISION_RANGE: 256,
+    },
 };
